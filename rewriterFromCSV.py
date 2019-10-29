@@ -15,22 +15,16 @@ class RewriterFromCSV(object):
 		self.vocabulary = voc
 		self.dataFile = df
 		self.summaryDict = dict()
-		self.listOfTerms = listOfTerms
 		self.threshold = threshold
+		self.listOfTerms = None
+		self.initListOfTerms(listOfTerms)
 
 
 	def initDictionnary(self):
-		if self.listOfTerms is None:
-			partitions = self.vocabulary.getPartitions()
-			for partition in partitions:
-				for mod in partition.modalities:
-					self.summaryDict[partition.getAttName()+" : "+mod] = 0.0
-		else:
-			partitions = self.vocabulary.getPartitions()
-			for partition in partitions:
-				for mod in partition.modalities:
-					if mod in listOfTerms:
-						self.summaryDict[partition.getAttName()+" : "+mod] = 0.0
+		partitions = self.vocabulary.getPartitions()
+		for partition in partitions:
+			for mod in partition.modalities:
+				self.summaryDict[partition.getAttName()+" : "+mod] = 0.0
 
 	def displaySummary(self,lineCount):
 		for key in self.summaryDict.keys():
@@ -41,26 +35,48 @@ class RewriterFromCSV(object):
 		try:
 			with open(self.dataFile, 'r') as source:
 				self.initDictionnary()
-				print(self.summaryDict)
 				lineCount = 0
+				filteredData = []
 				for line in source:
 					lineCount += 1
 					line = line.strip()
 					if line != "" and line[0] != "#":
 						f = Flight(line, self.vocabulary)
-						if self.listOfTerms is not None:
-							f.rewriteWithThreshold(self.summaryDict, self.listOfTerms,self.threshold)
+						if self.filter:
+							f.filter(filteredData,self.listOfTerms,self.threshold)
 						else:
 							f.rewrite(self.summaryDict)
-				print("End")
-				self.displaySummary(lineCount)
+				if not self.filter:
+					print("End")
+					self.displaySummary(lineCount)
+				else:
+					if len(filteredData) != 0:
+						print("Beginning summary on filtered data (",len(filteredData),"entries)")
+						for data in filteredData:
+							data.rewrite(self.summaryDict)
+						print("End of summary for filtered data")
+						self.displaySummary(len(filteredData))
+					else:
+						print("Filter returned no entry")
 		except:
 			raise Exception("Error while loading the dataFile %s" % self.dataFile)
+
+	def initListOfTerms(self,listOfTerms):
+		if listOfTerms is not None:
+			self.listOfTerms = dict()
+			self.filter = True
+			for element in listOfTerms:
+				partition = element.split(':')[0]
+				modalities = element.split(':')[1]
+				self.listOfTerms[partition] = modalities.split(";")
+			print("Filtering flight's list with",self.listOfTerms,"and threshold :",self.threshold)
+		else:
+			self.filter = False
 
 
 if __name__ == "__main__":
 	if len(sys.argv) < 3:
-		print("Usage: python flight.py <vocfile> <dataFile> <optional><term1,term2,....> <optional><threshold>")
+		print("Usage: python flight.py <vocfile> <dataFile> <optional><partition1:mod1;mod2...,partition2:mod1;mod2,....> <optional><threshold>")
 	else:
 		listOfTerms = None
 		threshold = None
