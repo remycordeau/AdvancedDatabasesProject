@@ -91,6 +91,29 @@ class RewriterFromCSV(object):
                     correlation = 1 - (1 / dep)
             self.correlationDict[key] = correlation
 
+    def findAtypicalTerms(self):
+        self.atypicalTermsDict = collections.OrderedDict()
+        distanceList = list()
+        for key in self.listOfTerms:
+            partName = str(key)
+            partition = voc.getPartition(partName)
+            modNames = partition.getModNames()
+            modalitiesToFilter = listOfTerms[partName]
+            indexFilteringModality = modNames.index(modalitiesToFilter[0])
+            for modality in partition.getModalities():
+                coverCurrentModality = self.getCoverFromModalityInDictionnary(self.summaryFilteredDict,partName+" : "+modality.getName())
+                if modality is TrapeziumModality:
+                    indexModality = modNames.index(modality.getName())
+                    distance = (abs(indexFilteringModality - indexModality))/partition.getNbModalities()
+                elif modality is EnumModality:
+                    if(modality.getName() == modalitiesToFilter[0]):
+                        distance = 1
+                    else:
+                        distance = 0
+            coverFilteringModality = self.getCoverFromModalityInDictionnary(self.summaryDict,partName + " : " + modalitiesToFilter[0])
+            distanceList.append(min(distance,coverFilteringModality,coverCurrentModality))
+        self.atypicalTermsDict[partName + " : " + modality.getName()] = max(distanceList)
+
     def getCoverFromModalityInDictionnary(self, dictionnary, key):
         return dictionnary[key] / 100
 
