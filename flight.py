@@ -112,11 +112,12 @@ class Flight(object):
             partitionName = partition.getAttName()
             if partitionName in listOfTerms: #checking if the partition has to be filtered
                 for modality in partition.getModalities():
-                   if modality.getName() in listOfTerms[partitionName]:  #checking if the modality has to be filtered
+                    if modality.getName() in listOfTerms[partitionName]:  #checking if the modality has to be filtered
                         val = self.getValue(partition.getAttName())
                         mu = modality.getMu(val)
-                        if mu > threshold: #checking if modality value in the partition for the flight is > to threshold
-                            filteredData.append(self)
+                        if mu <= threshold: #checking if modality value in the partition for the flight is > to threshold
+                            return
+        filteredData.append(self)
 
 if __name__ == "__main__":
     if len(sys.argv) < 2:
