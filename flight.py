@@ -97,17 +97,6 @@ class Flight(object):
             ret = self.fields[field]
         return ret
 
-    def rewrite(self):
-        """ Rewrite the flight according to the vocabulary voc (voc is a Vocabulary)"""
-        rw = []
-        for part in self.vocabulary.getPartitions():
-            displayedString = part.getAttName()
-            for partelt in part.getModalities():
-                val = self.getValue(part.getAttName())
-                mu = partelt.getMu(val)
-                rw.append(displayedString + " : " + partelt.getName() + "=>" + str(mu))
-        return rw
-
     def rewrite(self, summaryDict):
         """ Rewrite the flight according to the vocabulary voc (voc is a Vocabulary)"""
         for part in self.vocabulary.getPartitions():
