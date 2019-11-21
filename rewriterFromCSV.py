@@ -3,6 +3,7 @@
 import csv
 import sys
 import collections
+from display import Display
 from vocabulary import *
 from flight import Flight
 
@@ -32,7 +33,7 @@ class RewriterFromCSV(object):
     def displaySummary(self, dictionnary, lineCount):
         for key in self.summaryDict.keys():
             dictionnary[key] = (dictionnary[key] / lineCount) * 100
-        # print(str(key)+" => "+str(dictionnary[key])+" %")
+            # print(str(key)+" => "+str(dictionnary[key])+" %")
 
     def readAndRewrite(self):
         try:
@@ -61,7 +62,14 @@ class RewriterFromCSV(object):
                     self.findLinkedTerms()
                     print("Printing correlations with " + str(self.listOfTerms) + " and threshold : " + str(self.threshold))
                     for key in self.correlationDict.keys():
-                            print(str(key) + " : " + str(self.correlationDict[key]))
+                        print(str(key) + " : " + str(self.correlationDict[key]))
+                    self.findAtypicalTerms()
+                    print("Printing atypical terms with " + str(self.listOfTerms) + " and threshold : " + str(self.threshold))
+                    for term in self.atypicalTermsDict.keys():
+                        print(str(term) + " : " + str(self.atypicalTermsDict[term]))
+                    display = Display(self.summaryDict,filteredData,self.correlationDict,self.atypicalTermsDict)
+                    #display.displaySummary()
+                    display.displayCPieChartSummary(self.vocabulary)
                 else:
                     print("Filter returned no entry")
         except:
@@ -94,11 +102,12 @@ class RewriterFromCSV(object):
     def findAtypicalTerms(self):
         self.atypicalTermsDict = collections.OrderedDict()
         distanceList = list()
+        distance = 0
         for key in self.listOfTerms:
             partName = str(key)
             partition = voc.getPartition(partName)
             modNames = partition.getModNames()
-            modalitiesToFilter = listOfTerms[partName]
+            modalitiesToFilter = self.listOfTerms[partName]
             indexFilteringModality = modNames.index(modalitiesToFilter[0])
             for modality in partition.getModalities():
                 coverCurrentModality = self.getCoverFromModalityInDictionnary(self.summaryFilteredDict,partName+" : "+modality.getName())
