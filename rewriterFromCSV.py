@@ -67,9 +67,11 @@ class RewriterFromCSV(object):
                     print("Printing atypical terms with " + str(self.listOfTerms) + " and threshold : " + str(self.threshold))
                     for term in self.atypicalTermsDict.keys():
                         print(str(term) + " : " + str(self.atypicalTermsDict[term]))
-                    display = Display(self.summaryDict,filteredData,self.correlationDict,self.atypicalTermsDict)
-                    #display.displaySummary()
-                    display.displayCPieChartSummary(self.vocabulary)
+                    display = Display(self.vocabulary)
+                    #display.displayPieChartSummary(self.summaryDict, "General Summary for 2008 flights in the USA")
+                    display.displayPieChartSummary(self.summaryFilteredDict, "General Summary for 2008 flights with "+str(self.listOfTerms)+" and threshold : " + str(self.threshold))
+                    #display.displayLinkedTerms(self.correlationDict,self.listOfTerms,self.threshold)
+                    #display.displaySummary(self.correlationDict)
                 else:
                     print("Filter returned no entry")
         except:
@@ -107,21 +109,22 @@ class RewriterFromCSV(object):
             partName = str(key)
             partition = voc.getPartition(partName)
             modNames = partition.getModNames()
-            modalitiesToFilter = self.listOfTerms[partName]
+            modalitiesToFilter = self.listOfTerms[key]
             indexFilteringModality = modNames.index(modalitiesToFilter[0])
             for modality in partition.getModalities():
                 coverCurrentModality = self.getCoverFromModalityInDictionnary(self.summaryFilteredDict,partName+" : "+modality.getName())
-                if modality is TrapeziumModality:
+                if modality.isTrapeziumModality():
                     indexModality = modNames.index(modality.getName())
-                    distance = (abs(indexFilteringModality - indexModality))/partition.getNbModalities()
-                elif modality is EnumModality:
+                    distance = (abs(indexFilteringModality - indexModality))/(partition.getNbModalities()-1)
+                elif modality.isEnumModality():
                     if(modality.getName() == modalitiesToFilter[0]):
                         distance = 1
                     else:
                         distance = 0
-            coverFilteringModality = self.getCoverFromModalityInDictionnary(self.summaryDict,partName + " : " + modalitiesToFilter[0])
-            distanceList.append(min(distance,coverFilteringModality,coverCurrentModality))
-        self.atypicalTermsDict[partName + " : " + modality.getName()] = max(distanceList)
+                print(distance)
+                coverFilteringModality = self.getCoverFromModalityInDictionnary(self.summaryDict,partName + " : " + modalitiesToFilter[0])
+                distanceList.append(min(distance,coverFilteringModality,coverCurrentModality))
+                self.atypicalTermsDict[partName + " : " + modality.getName()] = max(distanceList)
 
     def getCoverFromModalityInDictionnary(self, dictionnary, key):
         return dictionnary[key] / 100
