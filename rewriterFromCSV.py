@@ -63,15 +63,16 @@ class RewriterFromCSV(object):
                     print("Printing correlations with " + str(self.listOfTerms) + " and threshold : " + str(self.threshold))
                     for key in self.correlationDict.keys():
                         print(str(key) + " : " + str(self.correlationDict[key]))
-                    self.findAtypicalTerms()
+                    self.findAtypicTerms()
                     print("Printing atypical terms with " + str(self.listOfTerms) + " and threshold : " + str(self.threshold))
                     for term in self.atypicalTermsDict.keys():
-                        print(str(term) + " : " + str(self.atypicalTermsDict[term]))
+                        print(str(term) + " : " + str(self.atypicalTermsDict[term])+ "in general : "+str(self.summaryDict[term])+" in filtered :"+str(self.summaryFilteredDict[term]))
                     display = Display(self.vocabulary)
-                    #display.displayPieChartSummary(self.summaryDict, "General Summary for 2008 flights in the USA")
-                    display.displayPieChartSummary(self.summaryFilteredDict, "General Summary for 2008 flights with "+str(self.listOfTerms)+" and threshold : " + str(self.threshold))
+                    display.displayPieChartSummary(self.summaryDict, "General Summary for 2008 flights in the USA")
+                    #display.displayPieChartSummary(self.summaryFilteredDict, "General Summary for 2008 flights with "+str(self.listOfTerms)+" and threshold : " + str(self.threshold))
                     #display.displayLinkedTerms(self.correlationDict,self.listOfTerms,self.threshold)
-                    #display.displaySummary(self.correlationDict)
+                    #display.displaySummary2(self.correlationDict)
+                    display.displaySummary2(self.atypicalTermsDict)
                 else:
                     print("Filter returned no entry")
         except:
@@ -100,6 +101,33 @@ class RewriterFromCSV(object):
                 else:
                     correlation = 1 - (1 / dep)
             self.correlationDict[key] = correlation
+
+    def findAtypicTerms(self):
+        self.atypicalTermsDict = collections.OrderedDict()
+        distanceList = list()
+        distance = 0
+        for key in self.summaryFilteredDict:
+            partitionName = str(key).split(" :")[0]
+            partition = voc.getPartition(partitionName)
+            modNames = partition.getModNames()
+            currentModality = str(key).split(": ")[1]
+            indexCurrentModality = modNames.index(currentModality)
+            coverCurrentModality = self.getCoverFromModalityInDictionnary(self.summaryFilteredDict,partitionName + " : " + currentModality)
+            for modality in partition.getModalities():
+                coverModality = self.getCoverFromModalityInDictionnary(self.summaryDict,partitionName + " : " + modality.getName()) # v index
+                if modality.isTrapeziumModality():
+                    indexModality = modNames.index(modality.getName())
+                    distance = (abs(indexCurrentModality - indexModality)) / (partition.getNbModalities() - 1)
+                elif modality.isEnumModality():
+                    if (modality.getName() == currentModality[0]):
+                        distance = 1
+                    else:
+                        distance = 0
+                distanceList.append(min(distance, 1 - coverCurrentModality, coverModality))
+            self.atypicalTermsDict[partitionName + " : " + modality.getName()] = max(distanceList)
+
+
+
 
     def findAtypicalTerms(self):
         self.atypicalTermsDict = collections.OrderedDict()

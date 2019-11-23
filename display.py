@@ -22,6 +22,7 @@ class Display(object):
             x=subject,
             y=values,
             mode='markers+text',
+            marker_size=values,
             transforms=[dict(
             type='groupby',
             groups=subject,
@@ -71,3 +72,19 @@ class Display(object):
         figure.update_traces(hoverinfo='label+percent', textfont_size=20,marker=dict(line=dict(color='#000000', width=2)))
         figure.update_layout(title_text="Linked terms to "+str(listOfTerms)+" with threshold = "+str(threshold))
         figure.show()
+
+    def displaySummary2(self,dict):
+        values = []
+        sizes = []
+        labels = []
+        for key in dict:
+            if dict[key] > 0:
+                labels.append(str(key))
+                values.append(dict[key])
+                sizes.append(dict[key]*100)
+        fig = go.Figure(data=[go.Scatter(
+            x=labels, y=values,
+            mode='markers',
+            marker_size=sizes)
+        ])
+        fig.show()
