@@ -1,35 +1,9 @@
-import plotly.io as pio
 import plotly.graph_objs as go
 from plotly.subplots import make_subplots
 
 class Display(object):
     def __init__(self,vocabulary):
       self.vocabulary = vocabulary
-
-    def displaySummary(self,dictionnary):
-        subject = []
-        values = []
-        text = []
-        for key in dictionnary.keys():
-            if (dictionnary[key] > 0):
-                subject.append(str(key).split(":")[0])
-                text.append(str(key).split(":")[1])
-                values.append(dictionnary[key])
-        data = [dict(
-            type="scatter",
-            textposition="top center",
-            text=text,
-            x=subject,
-            y=values,
-            mode='markers+text',
-            marker_size=values,
-            transforms=[dict(
-            type='groupby',
-            groups=subject,
-            )]
-        )]
-        fig_dict = dict(data=data)
-        pio.show(fig_dict, validate=False)
 
     def displayPieChartSummary(self, dictionnary,title):
         specs = []
@@ -73,7 +47,7 @@ class Display(object):
         figure.update_layout(title_text="Linked terms to "+str(listOfTerms)+" with threshold = "+str(threshold))
         figure.show()
 
-    def displaySummary2(self,dict):
+    def displayAtypicalTerms(self, dict, listOfTerms, threshold):
         values = []
         sizes = []
         labels = []
@@ -81,10 +55,16 @@ class Display(object):
             if dict[key] > 0:
                 labels.append(str(key))
                 values.append(dict[key])
-                sizes.append(dict[key]*200)
-        fig = go.Figure(data=[go.Scatter(
+                if dict[key] < 0.1:
+                    sizes.append(0.1*100)
+                else:
+                    sizes.append(dict[key]*100)
+        figure = go.Figure(data=[go.Scatter(
             x=labels, y=values,
             mode='markers',
             marker_size=sizes)
         ])
-        fig.show()
+        figure.update_xaxes(showgrid=False, zeroline=False)
+        figure.update_yaxes(showgrid=False, zeroline=False)
+        figure.update_layout(title_text="Atypical terms in 2008 flights with " + str(listOfTerms) + " with threshold = " + str(threshold))
+        figure.show()

@@ -33,7 +33,7 @@ class RewriterFromCSV(object):
     def displaySummary(self, dictionnary, lineCount):
         for key in self.summaryDict.keys():
             dictionnary[key] = (dictionnary[key] / lineCount) * 100
-            print(str(key)+" => "+str(dictionnary[key])+" %")
+            #print(str(key)+" => "+str(dictionnary[key])+" %")
 
     def readAndRewrite(self):
         try:
@@ -50,7 +50,7 @@ class RewriterFromCSV(object):
                             f.rewrite(self.summaryDict)
                             f.filter(filteredData, self.listOfTerms, self.threshold)
                 print("End : Displaying general summary")
-                #self.displaySummary(self.summaryDict, lineCount)
+                self.displaySummary(self.summaryDict, lineCount)
                 print("-------------- End of general summary ---------------")
                 if len(filteredData) != 0:
                     print("Beginning summary on filtered data (" + str(len(filteredData)) + " entries)")
@@ -70,9 +70,8 @@ class RewriterFromCSV(object):
                     display = Display(self.vocabulary)
                     display.displayPieChartSummary(self.summaryDict, "General Summary for 2008 flights in the USA")
                     display.displayPieChartSummary(self.summaryFilteredDict, "General Summary for 2008 flights with "+str(self.listOfTerms)+" and threshold : " + str(self.threshold))
-                    #display.displayLinkedTerms(self.correlationDict,self.listOfTerms,self.threshold)
-                    #display.displaySummary2(self.correlationDict)
-                    display.displaySummary2(self.atypicalTermsDict)
+                    display.displayLinkedTerms(self.correlationDict,self.listOfTerms,self.threshold)
+                    display.displayAtypicalTerms(self.atypicalTermsDict,self.listOfTerms,self.threshold)
                 else:
                     print("Filter returned no entry")
         except:
@@ -124,8 +123,8 @@ class RewriterFromCSV(object):
                             distance = 0
                         else:
                             distance = 1
-                    distanceList.append(min(distance, 1 - coverCurrentModality, coverModality))
-                self.atypicalTermsDict[partitionName + " : " + currentModality] = max(distanceList)
+                    distanceList.append(min(distance, 1 - coverCurrentModality, coverModality)) # min(d(v,v'),cover(v,R),1-cover(v',R))
+                self.atypicalTermsDict[partitionName + " : " + currentModality] = max(distanceList) # D(v',R)
                 distanceList = list()
 
     def getCoverFromModalityInDictionnary(self, dictionnary, key):
