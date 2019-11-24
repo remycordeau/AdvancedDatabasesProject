@@ -81,7 +81,7 @@ class Display(object):
             if dict[key] > 0:
                 labels.append(str(key))
                 values.append(dict[key])
-                sizes.append(dict[key]*100)
+                sizes.append(dict[key]*200)
         fig = go.Figure(data=[go.Scatter(
             x=labels, y=values,
             mode='markers',
