@@ -1,10 +1,22 @@
+import random
 import plotly.graph_objs as go
 from plotly.subplots import make_subplots
 
 class Display(object):
+
     def __init__(self,vocabulary):
       self.vocabulary = vocabulary
 
+    def generateRandomColor(self):
+        r = random.randint(0,255)
+        g = random.randint(0,255)
+        b = random.randint(0,255)
+        hexCode = self.rgb2hex(r,g,b)
+        return hexCode
+	
+    def rgb2hex(self,r,g,b):
+	    return '#%02x%02x%02x' % (r,g,b)
+    
     def displayPieChartSummary(self, dictionnary,title):
         specs = []
 
@@ -47,14 +59,17 @@ class Display(object):
         figure.update_layout(title_text="Linked terms to "+str(listOfTerms)+" with threshold = "+str(threshold))
         figure.show()
 
-    def displayAtypicalTerms(self, dict, listOfTerms, threshold):
+    def displayBubbleChart(self, dict, title):
         values = []
         sizes = []
         labels = []
+        colors = []
         for key in dict:
             if dict[key] > 0:
                 labels.append(str(key))
                 values.append(dict[key])
+                randomColor = self.generateRandomColor()
+                colors.append(randomColor)
                 if dict[key] < 0.1:
                     sizes.append(0.1*100)
                 else:
@@ -62,9 +77,11 @@ class Display(object):
         figure = go.Figure(data=[go.Scatter(
             x=labels, y=values,
             mode='markers',
+            marker_color=colors,
             marker_size=sizes)
         ])
         figure.update_xaxes(showgrid=False, zeroline=False)
         figure.update_yaxes(showgrid=False, zeroline=False)
-        figure.update_layout(title_text="Atypical terms in 2008 flights with " + str(listOfTerms) + " with threshold = " + str(threshold))
+        figure.update_layout(title_text=title)
         figure.show()
+     

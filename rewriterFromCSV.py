@@ -70,8 +70,8 @@ class RewriterFromCSV(object):
                     display = Display(self.vocabulary)
                     display.displayPieChartSummary(self.summaryDict, "General Summary for 2008 flights in the USA")
                     display.displayPieChartSummary(self.summaryFilteredDict, "General Summary for 2008 flights with "+str(self.listOfTerms)+" and threshold : " + str(self.threshold))
-                    display.displayLinkedTerms(self.correlationDict,self.listOfTerms,self.threshold)
-                    display.displayAtypicalTerms(self.atypicalTermsDict,self.listOfTerms,self.threshold)
+                    display.displayBubbleChart(self.correlationDict,"Linked terms in 2008 flights with " + str(self.listOfTerms) + " and threshold = " + str(self.threshold))
+                    display.displayBubbleChart(self.atypicalTermsDict,"Atypical terms in 2008 flights with " + str(self.listOfTerms) + " and threshold = " + str(self.threshold))
                 else:
                     print("Filter returned no entry")
         except:
