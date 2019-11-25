@@ -8,16 +8,19 @@ class Display(object):
       self.vocabulary = vocabulary
 
     def generateRandomColor(self):
+        """ Generates random RGB color """
         r = random.randint(0,255)
         g = random.randint(0,255)
         b = random.randint(0,255)
         hexCode = self.rgb2hex(r,g,b)
         return hexCode
-	
+
     def rgb2hex(self,r,g,b):
-	    return '#%02x%02x%02x' % (r,g,b)
+        """ converts RGB color to hexadecimal """
+        return '#%02x%02x%02x' % (r,g,b)
     
     def displayPieChartSummary(self, dictionnary,title):
+        """ displays pie chart figure for the given dictionnary """
         specs = []
 
         for i in range(4):
@@ -47,19 +50,8 @@ class Display(object):
         figure.update_layout(title_text=title,height=1000)
         figure.show()
 
-    def displayLinkedTerms(self,linkedTermsDictionnary,listOfTerms,threshold):
-        values = []
-        labels = []
-        for key in linkedTermsDictionnary:
-            if(linkedTermsDictionnary[key] > 0): #if the correlation is > 0, we display it
-                labels.append(str(key))
-                values.append(linkedTermsDictionnary[key])
-        figure = go.Figure(data=[go.Pie(labels=labels,values=values,hole=.5)])
-        figure.update_traces(hoverinfo='label+percent', textfont_size=20,marker=dict(line=dict(color='#000000', width=2)))
-        figure.update_layout(title_text="Linked terms to "+str(listOfTerms)+" with threshold = "+str(threshold))
-        figure.show()
-
     def displayBubbleChart(self, dict, title):
+        """ displays bubble chart figure for the given dictionnary """
         values = []
         sizes = []
         labels = []

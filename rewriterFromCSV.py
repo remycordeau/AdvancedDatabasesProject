@@ -16,14 +16,16 @@ class RewriterFromCSV(object):
 		"""
         self.vocabulary = voc
         self.dataFile = df
-        self.summaryDict = collections.OrderedDict()
-        self.summaryFilteredDict = collections.OrderedDict()
-        self.correlationDict = collections.OrderedDict()
-        self.threshold = threshold
-        self.listOfTerms = None
+        """ Each dictionnary has a key of the following pattern [partition : modality] """
+        self.summaryDict = collections.OrderedDict() # dictionnary for general summary of data
+        self.summaryFilteredDict = collections.OrderedDict() # dictionnary for general summary of filtered data
+        self.correlationDict = collections.OrderedDict() # dictionnary for correlations between modalities and filter condition
+        self.threshold = threshold # threshold value for filter
+        self.listOfTerms = None # filtering terms
         self.initListOfTerms(listOfTerms)
 
     def initDictionnary(self):
+        """ Inits dictionnaries for general summary of data with all the modalities of the vocabulary (cover each modality equal to 0)"""
         partitions = self.vocabulary.getPartitions()
         for partition in partitions:
             for mod in partition.modalities:
@@ -31,16 +33,18 @@ class RewriterFromCSV(object):
                 self.summaryFilteredDict[partition.getAttName() + " : " + mod] = 0.0
 
     def displaySummary(self, dictionnary, lineCount):
+        """ Converts all covers in dictionnary into percentage """
         for key in self.summaryDict.keys():
             dictionnary[key] = (dictionnary[key] / lineCount) * 100
             #print(str(key)+" => "+str(dictionnary[key])+" %")
 
     def readAndRewrite(self):
+        """ opens data file, read it line by line then computes summary/correlation/atypical terms and displays figures"""
         try:
             with open(self.dataFile, 'r') as source:
                 self.initDictionnary()
                 lineCount = 0
-                filteredData = []
+                filteredData = [] # array of filtered flights
                 for line in source:
                     lineCount += 1
                     line = line.strip()
@@ -78,6 +82,7 @@ class RewriterFromCSV(object):
             raise Exception("Error while loading the dataFile %s" % self.dataFile)
 
     def initListOfTerms(self, listOfTerms):
+        """ Initializes listOfTerms dictionnary, used to filter data """
         if listOfTerms is not None:
             self.listOfTerms = dict()
             self.filter = True
@@ -90,11 +95,12 @@ class RewriterFromCSV(object):
             self.filter = False
 
     def findLinkedTerms(self):
+        """ Computes for each modality of the dictionnary the correlation value between the modality and the filter condition """
         for key in self.summaryDict.keys():  # v' in the formula
             if self.getCoverFromModalityInDictionnary(self.summaryDict, key) == 0:
                 correlation = 0
             else:
-                dep = self.getCoverFromModalityInDictionnary(self.summaryFilteredDict,key) / self.getCoverFromModalityInDictionnary(self.summaryDict, key)
+                dep = self.getCoverFromModalityInDictionnary(self.summaryFilteredDict,key) / self.getCoverFromModalityInDictionnary(self.summaryDict, key) #cover(v',R')/cover(v'R)
                 if dep <= 1:
                     correlation = 0
                 else:
@@ -102,6 +108,7 @@ class RewriterFromCSV(object):
             self.correlationDict[key] = correlation
 
     def findAtypicalTerms(self):
+        """ Computes for each modality of the dictionnary the atypicity value """
         self.atypicalTermsDict = collections.OrderedDict()
         distanceList = list()
         distance = 0
@@ -128,6 +135,7 @@ class RewriterFromCSV(object):
                 distanceList = list()
 
     def getCoverFromModalityInDictionnary(self, dictionnary, key):
+        """ returns the cover in the dictionnary of the specified modality """
         return dictionnary[key] / 100
 
 

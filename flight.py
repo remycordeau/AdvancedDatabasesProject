@@ -108,6 +108,7 @@ class Flight(object):
                 summaryDict[displayedString + " : " + modality] += mu
 
     def filter(self,filteredData,listOfTerms,threshold):
+        """ Filters data according to the modalities in listOfTerms and the threshold """
         for partition in self.vocabulary.getPartitions():
             partitionName = partition.getAttName()
             if partitionName in listOfTerms: #checking if the partition has to be filtered
